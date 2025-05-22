@@ -1,18 +1,11 @@
 import requests
 
 def main():
-    gender = input('Male or Female? ')
-    has_job = input('Does he/she has a job? ')
-    if has_job[0].lower() == 'y':
-        has_job = True
-    else:
-        has_job = False
-    get_name_by_occ_and_gender(gender, has_job)
+    print(tallest_by_params()['name'])
 
-def get_name_by_occ_and_gender(gender, has_job):
-    tallest_supe_by_conds = get_tallest(supe_by_gender(supe_has_job(get_all_supes(), has_job), gender))
-    print(tallest_supe_by_conds['name'])
-
+def tallest_by_params():
+    tallest = get_tallest(supe_by_gender(supe_has_job(get_all_supes())))
+    return tallest
 
 def get_all_supes():
     all_supes = requests.get("https://akabab.github.io/superhero-api/api/all.json")
@@ -21,14 +14,16 @@ def get_all_supes():
     else:
         return "Could not complete request!"
 
-def supe_by_gender(supes, gender):
+def supe_by_gender(supes):
+    gender = get_gender()
     gendered_supes = []
     for supe in supes:
         if supe['appearance']['gender'] == gender:
             gendered_supes.append(supe)
     return gendered_supes
 
-def supe_has_job(supes, has_job=True):
+def supe_has_job(supes):
+    has_job = get_has_job()
     supes_by_job = []
     for supe in supes:
         job = supe['work']['occupation']
@@ -41,9 +36,8 @@ def supe_has_job(supes, has_job=True):
     return supes_by_job
 
 
-
 def get_tallest(supes):
-    tallest_supe = dict()
+    tallest_supe = None
     tallest_height = 0
     for supe in supes:
         height = float(supe['appearance']['height'][1].split()[0])
@@ -52,7 +46,24 @@ def get_tallest(supes):
             tallest_heigth = height
     return tallest_supe
 
+def get_gender():
+    gender = input('Male or Female? ').capitalize()
+    if gender not in ['Male', 'Female']:
+        print('Gender choices: "Male", "Female"')
+        raise TypeError
+    else:
+        return gender
 
+def get_has_job():
+    has_job = input('Does he/she has a job? ').lower()
+    if has_job not in ['y', 'yes', 'n', 'no']:
+        print('Please answer "yes" or "no"')
+        raise ValueError
+    else:
+        if has_job[0].lower() == 'y':
+            return True
+        else:
+            return False
 
 if __name__ == "__main__":
     main()
