@@ -5,17 +5,16 @@ def get_tallest_super(gender: str, has_job: bool) -> str:
     check_data(gender, has_job)
     all_supers = get_all_supers()
     tallest_super = get_tallest(all_supers, gender, has_job)
-
+    if not tallest_super:
+        raise ValueError('No such superhero found!')
     return tallest_super['name']
 
 
 def check_data(gender: str, has_job: bool) -> None:
     if gender not in ['Male', 'Female']:
-        print('Gender should be "Male" or "Female".')
-        raise ValueError
+        raise ValueError('Gender should be "Male" or "Female".')
     if not isinstance(has_job, bool):
-        print("Argument 'has_job' should be boolean type")
-        raise TypeError
+        raise TypeError("Argument 'has_job' should be boolean type")
 
 def get_all_supers() -> list[dict]:
     url = "https://akabab.github.io/superhero-api/api/all.json"
@@ -72,6 +71,9 @@ def get_tallest(all_supers: list[dict], gender: str, has_job: bool) -> dict:
                 tallest = supe
                 top_height = height
 
+    if tallest is None:
+        return dict()
+
     return tallest
 
-print(get_tallest_super('Female', True))
+# print(get_tallest_super('Female', True))
