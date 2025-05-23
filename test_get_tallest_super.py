@@ -67,4 +67,27 @@ def test_wrong_has_job_type(patch_get_all_supers):
         get_tallest_super.get_tallest_super('Male', 'Yes')
         get_tallest_super.get_tallest_super('Female', "no")
 
-def test_
+
+def test_empty_entries(monkeypatch):
+    bad_mock_data = [{}]
+    def bad_mock():
+        return bad_mock_data
+    monkeypatch.setattr('get_tallest_super.get_all_supers', bad_mock)
+    with pytest.raises(ValueError):
+        get_tallest_super.get_tallest_super('Male', True)
+
+def test_wrong_response_type(monkeypatch):
+    bad_mock_data = {'Hero': {'name': 'Batman'}}
+    def bad_mock():
+        return bad_mock_data
+    monkeypatch.setattr('get_tallest_super.get_all_supers', bad_mock)
+    with pytest.raises(TypeError):
+        get_tallest_super.get_tallest_super('Male', True)
+
+def test_empty_response(monkeypatch):
+    bad_mock_data = dict()
+    def bad_mock():
+        return bad_mock_data
+    monkeypatch.setattr('get_tallest_super.get_all_supers', bad_mock)
+    with pytest.raises(ValueError):
+        get_tallest_super.get_tallest_super('Male', True)

@@ -4,6 +4,7 @@ import requests
 def get_tallest_super(gender: str, has_job: bool) -> str:
     check_data(gender, has_job)
     all_supers = get_all_supers()
+    assert_response(all_supers)
     tallest_super = get_tallest(all_supers, gender, has_job)
     if not tallest_super:
         raise ValueError('No such superhero found!')
@@ -22,29 +23,26 @@ def get_all_supers() -> list[dict]:
     status_code = all_supers.status_code
     check_connection(status_code)
     supers_list = all_supers.json()
-    assert_response(supers_list)
     return supers_list
 
 
 def check_connection(status_code) -> None:
     if status_code != 200:
-        print("Request could not be completed!")
-        raise ConnectionError
+        raise ConnectionError("Request could not be completed!")
 
 
 def assert_response(data: list[dict]) -> None:
-    if not isinstance(data, list):
-        print("Wrong data recieved. Could not process")
-        raise TypeError
     if not data:
-        print("Empty response body")
-        raise ValueError
+        raise ValueError("Empty response body")
+
+    if not isinstance(data, list):
+        raise TypeError("Wrong data recieved. Could not process")
+
     if not all(isinstance(item, dict) for item in data):
-        print("Wrong data structure in response body")
-        raise TypeError
+        raise TypeError("Wrong data structure in response body")
+
     if not all(item for item in data):
-        print("Empty entries in response.")
-        raise ValueError
+        raise ValueError("Empty entries in response.")
 
 def get_tallest(all_supers: list[dict], gender: str, has_job: bool) -> dict:
     tallest = None
@@ -73,7 +71,4 @@ def get_tallest(all_supers: list[dict], gender: str, has_job: bool) -> dict:
 
     if tallest is None:
         return dict()
-
     return tallest
-
-# print(get_tallest_super('Female', True))
