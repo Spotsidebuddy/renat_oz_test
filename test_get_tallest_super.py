@@ -1,4 +1,6 @@
 import pytest
+
+
 import get_tallest_super
 
 mock_data = [
@@ -67,27 +69,60 @@ def test_wrong_has_job_type(patch_get_all_supers):
         get_tallest_super.get_tallest_super('Male', 'Yes')
         get_tallest_super.get_tallest_super('Female', "no")
 
+#Тест реакций на Response
+def bad_response(status_code, data):
+    class MockResponse:
+        def __init__(self, status_code, data):
+            self.status_code = status_code
+            self.data = data
+        def json(self):
+            return self.data
 
+    return MockResponse(status_code, data)
+
+#Код ответа не 200
+def test_status_code(monkeypatch):
+    def mock_get(url):
+        return bad_response(404, mock_data)
+    monkeypatch.setattr("get_tallest_super.requests.get", mock_get)
+    with pytest.raises(ConnectionError):
+        get_tallest_super.get_tallest_super('Male', True)
+
+# Пустые записи в теле ответа
 def test_empty_entries(monkeypatch):
-    bad_mock_data = [{}]
-    def bad_mock():
-        return bad_mock_data
-    monkeypatch.setattr('get_tallest_super.get_all_supers', bad_mock)
+    bad_data = [
+    {
+        'name': 'Batman',
+        'appearance': {
+            'gender': 'Male',
+            'height': ["6'2", '187 cm']
+        },
+        'work': {'occupation': 'CEO of Wayne Industries'}
+    },
+    {}
+    ]
+    def mock_get(url):
+        return bad_response(200, bad_data)
+    monkeypatch.setattr("get_tallest_super.requests.get", mock_get)
+
     with pytest.raises(ValueError):
         get_tallest_super.get_tallest_super('Male', True)
 
+#Неверный тип данных в теле
 def test_wrong_response_type(monkeypatch):
     bad_mock_data = {'Hero': {'name': 'Batman'}}
-    def bad_mock():
-        return bad_mock_data
-    monkeypatch.setattr('get_tallest_super.get_all_supers', bad_mock)
+    def mock_get(url):
+        return bad_response(200, bad_mock_data)
+    monkeypatch.setattr('get_tallest_super.requests.get', mock_get)
     with pytest.raises(TypeError):
         get_tallest_super.get_tallest_super('Male', True)
 
+#Пустой список в ответе
 def test_empty_response(monkeypatch):
-    bad_mock_data = dict()
-    def bad_mock():
-        return bad_mock_data
-    monkeypatch.setattr('get_tallest_super.get_all_supers', bad_mock)
+    bad_mock_data = list()
+    def mock_get(url):
+        return bad_response(200, bad_mock_data)
+    monkeypatch.setattr('get_tallest_super.requests.get', mock_get)
     with pytest.raises(ValueError):
         get_tallest_super.get_tallest_super('Male', True)
+

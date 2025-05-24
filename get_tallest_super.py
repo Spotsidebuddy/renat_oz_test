@@ -32,11 +32,11 @@ def check_connection(status_code) -> None:
 
 
 def assert_response(data: list[dict]) -> None:
-    if not data:
-        raise ValueError("Empty response body")
-
     if not isinstance(data, list):
         raise TypeError("Wrong data recieved. Could not process")
+
+    if not data:
+        raise ValueError("Empty response body")
 
     if not all(isinstance(item, dict) for item in data):
         raise TypeError("Wrong data structure in response body")
